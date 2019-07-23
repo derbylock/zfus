@@ -506,6 +506,7 @@ static int xmp_chmod(const char *path, mode_t mode,
 	int res;
 
 	concatLocal(relative_path, options.base, path)
+	sync();
 	res = chmod(relative_path, mode);
 	if (res == -1)
 		return -errno;
@@ -520,6 +521,7 @@ static int xmp_chown(const char *path, uid_t uid, gid_t gid,
 	int res;
 
 	concatLocal(relative_path, options.base, path)
+	sync();
 	res = lchown(relative_path, uid, gid);
 	if (res == -1)
 		return -errno;
