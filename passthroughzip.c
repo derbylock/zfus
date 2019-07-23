@@ -679,7 +679,8 @@ static int xmp_release(const char *path, struct fuse_file_info *fi)
 		}
 	}
 	if (i != modified_handles_count) {
-		for (int j=i+1; j < modified_handles_count; j++) {
+		int j;
+		for (j=i+1; j < modified_handles_count; j++) {
 			modified_handles[j-1] = modified_handles[j];
 		}
 		modified_handles_count--;
