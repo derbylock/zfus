@@ -709,6 +709,7 @@ static int xmp_release(const char *path, struct fuse_file_info *fi)
 			fprintf(stderr, "release compress failed\n");
 			return -1;
 		}
+		sync();
 	} else {
 		pthread_mutex_unlock(&modified_handles_lock);
 	}
