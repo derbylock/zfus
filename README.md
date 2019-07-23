@@ -1,6 +1,6 @@
 Zlib fuse3 filesystem which compress/decompress file on opening/closing (after modification).
 
-Most existing filesystems compress/decompress files when filesystem unmounts which in most cases is not good for filesystems with many files.
+Most existing filesystems compress/decompress files when filesystem unmounts which in most cases is not good for filesystems with many files (see https://github.com/refi64/fuse-zip / https://bitbucket.org/agalanin/fuse-zip).
 
 ## usage
 ```bash
