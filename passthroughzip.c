@@ -313,6 +313,9 @@ static int xmp_getattr(const char *path, struct stat *stbuf,
 
 	res = lstat(relative_path_base, stbuf);
 	if (res != -1) {
+		if (S_ISDIR(stbuf->st_mode)) {
+			return 0;
+		}
 		FILE* src = fopen(relative_path_base, "rb");
 		if(src == 0)
 		{
