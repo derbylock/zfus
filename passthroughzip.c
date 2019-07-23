@@ -84,6 +84,7 @@ pthread_mutex_t modified_handles_lock;
 static uint64_t modified_handles[MAX_MODIFIED_HANDLES]; // 1million max modified
 static int modified_handles_count = 0;
 
+/*
 void pathEscape(const char* src, char* dst) {
     while(*src != '\0') {
     	if (*src == '/') {
@@ -106,6 +107,21 @@ void pathEscape(const char* src, char* dst) {
     }
     *dst = '\0';
 }
+*/
+
+void pathEscape(const char* src, char* dst) {
+    while(*src != '\0') {
+    	if (*src == '/') {
+    		*dst = '\\';
+    	} else {
+    		*dst = *src;
+    	}
+		dst++;
+		src++;
+    }
+    *dst = '\0';
+}
+
 
 void concatAndEscape(const char* t_s1, const char* t_s2, char* dst) {
 	strcpy(dst, t_s1);
