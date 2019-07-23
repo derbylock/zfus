@@ -1,4 +1,4 @@
-Zlib fuse filesystem which compress/decompress file on opening/closing (after modification).
+Zlib fuse3 filesystem which compress/decompress file on opening/closing (after modification).
 
 Most existing filesystems compress/decompress files when filesystem unmounts which in most cases is not good for filesystems with many files.
 
