@@ -84,6 +84,8 @@ pthread_mutex_t modified_handles_lock;
 static uint64_t modified_handles[MAX_MODIFIED_HANDLES]; // 1million max modified
 static int modified_handles_count = 0;
 
+pthread_mutex_t compress_lock;
+
 /*
 void pathEscape(const char* src, char* dst) {
     while(*src != '\0') {
@@ -592,11 +594,18 @@ static int xmp_open(const char *path, struct fuse_file_info *fi)
 	concatLocal(relative_path_base, options.base, path)
 	concatLocalNoDirs(relative_path_tmp, options.tmp, path)
 
-	if(!decompress_file_by_name(relative_path_base, relative_path_tmp)) {
-		return -1;
+	pthread_mutex_lock(&compress_lock);
+	if( access( relative_path_tmp, F_OK ) != -1 ) {
+	    // file exists
+	} else {
+		if(!decompress_file_by_name(relative_path_base, relative_path_tmp)) {
+			pthread_mutex_unlock(&compress_lock);
+			return -1;
+		}
 	}
 
 	res = open(relative_path_tmp, fi->flags);
+	pthread_mutex_unlock(&compress_lock);
 	if (res == -1)
 		return -errno;
 
@@ -668,14 +677,20 @@ static int xmp_write(const char *path, const char *buf, size_t size,
 
 	if(fi == NULL) {
 		close(fd);
+		pthread_mutex_lock(&compress_lock);
 
 		concatLocal(relative_path_base, options.base, path)
 		if(!compress_file_by_name(relative_path_tmp, relative_path_base)) {
 			fprintf(stderr, "release compress failed\n");
+			remove(relative_path_tmp);
+			sync();
+			pthread_mutex_unlock(&compress_lock);
 			return -1;
 		}
 
 		remove(relative_path_tmp);
+		sync();
+		pthread_mutex_unlock(&compress_lock);
 	}
 	return res;
 }
@@ -696,6 +711,8 @@ static int xmp_release(const char *path, struct fuse_file_info *fi)
 {
 	concatLocal(relative_path_base, options.base, path)
 	concatLocalNoDirs(relative_path_tmp, options.tmp, path)
+
+	pthread_mutex_lock(&compress_lock);
 	fflush(stdout);
 
 	(void) path;
@@ -718,6 +735,7 @@ static int xmp_release(const char *path, struct fuse_file_info *fi)
 
 		if(!compress_file_by_name(relative_path_tmp, relative_path_base)) {
 			fprintf(stderr, "release compress failed\n");
+			pthread_mutex_unlock(&compress_lock);
 			return -1;
 		}
 		sync();
@@ -726,6 +744,7 @@ static int xmp_release(const char *path, struct fuse_file_info *fi)
 	}
 
 	remove(relative_path_tmp);
+	pthread_mutex_unlock(&compress_lock);
 
 	return 0;
 }
@@ -909,6 +928,12 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    if (pthread_mutex_init(&compress_lock, NULL) != 0)
+    {
+        printf("\n mutex init failed\n");
+        return 1;
+    }
+
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 	/* Set defaults -- we have to use strdup so that
 	   fuse_opt_parse can free the defaults if other
@@ -951,5 +976,6 @@ int main(int argc, char *argv[])
 	printf("%s\n", "Exiting");
 	fflush(stdout);
 	pthread_mutex_destroy(&modified_handles_lock);
+	pthread_mutex_destroy(&compress_lock);
 	return ret;
 }
