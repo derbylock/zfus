@@ -477,11 +477,20 @@ static int xmp_rename(const char *from, const char *to, unsigned int flags)
 	if (flags)
 		return -EINVAL;
 
+	sync();
+
 	concatLocal(relative_path_from, options.base, from)
 	concatLocal(relative_path_to, options.base, to)
 	res = rename(relative_path_from, relative_path_to);
 	if (res == -1)
 		return -errno;
+	if (strcmp(from, to) == 0) {
+		// removal case
+		concatLocalNoDirs(relative_path_tmp, options.tmp, from);
+		res = remove(relative_path_tmp);
+		if (res == -1)
+			return -errno;
+	}
 
 	return 0;
 }
