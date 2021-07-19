@@ -14,4 +14,4 @@ here:
   - zfusbase is the direcotry where compressed files will be stored,
   - zfustmp is the directory for uncompressed currently opened files
   - tt is the mountpoint
-  
+

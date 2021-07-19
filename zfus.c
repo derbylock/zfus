@@ -16,12 +16,14 @@
  *
  * Compile with
  *
- *     gcc -Wall passthrough.c `pkg-config fuse3 --cflags --libs` -o passthrough
+ *     gcc -Wall -D_FILE_OFFSET_BITS=64 zfus.c `pkg-config fuse3 zlib --cflags --libs` -o zfus
+ * 
+ *    usage:
+ *      ./zfus -s -f -d --base="/var/log/zfusbase" --tmp="/var/log/zfustmp" /mnt/zfus &
  *
  * ## Source code ##
- * \include passthrough.c
+ * \include zfus.c
  */
-
 
 #define FUSE_USE_VERSION 31
 
@@ -60,7 +62,7 @@
 #include <sys/xattr.h>
 #endif
 
-#include "passthrough_helpers.h"
+#include "zfus_helpers.h"
 
 static struct options {
 	const char *base;
